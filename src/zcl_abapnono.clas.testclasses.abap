@@ -15,10 +15,8 @@ ENDCLASS.
 
 
 CLASS ltcl_test_board_setup IMPLEMENTATION.
-
   METHOD init.
-    cl_abap_unit_assert=>assert_not_initial(  f_cut->board ).
-
+    cl_abap_unit_assert=>assert_not_initial( f_cut->board ).
   ENDMETHOD.
 
   METHOD value_set_01.
@@ -34,10 +32,9 @@ CLASS ltcl_test_board_setup IMPLEMENTATION.
      ( line = '..OOOOOO..' )
      ( line = '..........' ) ) ).
 
-    cl_abap_unit_assert=>assert_table_contains(
-      table = f_cut->board
-      line  = VALUE zcl_abapnono=>_line(
-         idx = 1
+    cl_abap_unit_assert=>assert_equals(
+      act = f_cut->board[ 1 ]
+      exp  = VALUE zcl_abapnono=>_line(
          c01 = zcl_abapnono=>option_clr
          c02 = zcl_abapnono=>option_clr
          c03 = zcl_abapnono=>option_clr
@@ -101,8 +98,6 @@ CLASS ltcl_test_helper_values IMPLEMENTATION.
        ) ).
 
 
-    f_cut->build_helping_numbers(  ).
-
   ENDMETHOD.
 
 
@@ -110,80 +105,85 @@ CLASS ltcl_test_helper_values IMPLEMENTATION.
 
     cl_abap_unit_assert=>assert_equals(
       exp = VALUE zcl_abapnono=>_helper_values( )
-      act = f_cut->get_helper_values_by_index(  type = 'R' index = 1 ) ).
+      act = f_cut->get_helper_values_by_index(  type = zcl_abapnono=>helper_type_row index = 1 ) ).
 
   ENDMETHOD.
 
   METHOD helper_values_col_02.
     cl_abap_unit_assert=>assert_equals(
-      exp = VALUE zcl_abapnono=>_helper_values( ( type = 'R' cell = 2 idx = 1 val = 6 ) )
-      act = f_cut->get_helper_values_by_index(  type = 'R' index = 2 ) ).
+      exp = VALUE zcl_abapnono=>_helper_values( ( type = zcl_abapnono=>helper_type_row cell = 2 idx = 1 val = 6 ) )
+      act = f_cut->get_helper_values_by_index(  type = zcl_abapnono=>helper_type_row index = 2 ) ).
 
   ENDMETHOD.
 
   METHOD helper_values_col_03.
     cl_abap_unit_assert=>assert_equals(
-      exp = VALUE zcl_abapnono=>_helper_values( ( type = 'R' cell = 3 idx = 1 val = 8 ) )
-      act = f_cut->get_helper_values_by_index(  type = 'R' index = 3 ) ).
+      exp = VALUE zcl_abapnono=>_helper_values( ( type = zcl_abapnono=>helper_type_row cell = 3 idx = 1 val = 8 ) )
+      act = f_cut->get_helper_values_by_index(  type = zcl_abapnono=>helper_type_row index = 3 ) ).
   ENDMETHOD.
 
   METHOD helper_values_col_04.
     cl_abap_unit_assert=>assert_equals(
-      exp = VALUE zcl_abapnono=>_helper_values(
-        (  type = 'R' cell = 4 idx = 1 val = 3 )
-        (  type = 'R' cell = 4 idx = 2 val = 3 ) )
-      act = f_cut->get_helper_values_by_index(  type = 'R' index = 4 ) ).
+        exp = VALUE zcl_abapnono=>_helper_values(
+                        type = zcl_abapnono=>helper_type_row
+                        cell = 4
+                        val  = 3
+                        (  idx = 1 )
+                        (  idx = 2 ) )
+        act = f_cut->get_helper_values_by_index(
+                  type  = zcl_abapnono=>helper_type_row
+                  index = 4 ) ).
   ENDMETHOD.
 
   METHOD helper_values_col_05.
     cl_abap_unit_assert=>assert_equals(
       exp = VALUE zcl_abapnono=>_helper_values(
-                type = 'R' cell = 5
+                type = zcl_abapnono=>helper_type_row cell = 5
         ( idx = 1 val = 3 )
         ( idx = 2 val = 3 )
         ( idx = 3 val = 1 ) )
-      act = f_cut->get_helper_values_by_index(  type = 'R' index = 5 ) ).
+      act = f_cut->get_helper_values_by_index(  type = zcl_abapnono=>helper_type_row index = 5 ) ).
   ENDMETHOD.
 
   METHOD helper_values_col_06.
     cl_abap_unit_assert=>assert_equals(
       exp = VALUE zcl_abapnono=>_helper_values(
-          type = 'R' cell = 6
+          type = zcl_abapnono=>helper_type_row cell = 6
         ( idx = 1 val = 1 )
         ( idx = 2 val = 1 )
         ( idx = 3 val = 1 )
         ( idx = 4 val = 1 ) )
-      act = f_cut->get_helper_values_by_index(  type = 'R' index = 6 ) ).
+      act = f_cut->get_helper_values_by_index(  type = zcl_abapnono=>helper_type_row index = 6 ) ).
   ENDMETHOD.
 
   METHOD helper_values_col_07.
     cl_abap_unit_assert=>assert_equals(
       exp = VALUE zcl_abapnono=>_helper_values(
-          type = 'R' cell = 7
+          type = zcl_abapnono=>helper_type_row cell = 7
         ( idx = 1 val = 2 )
         ( idx = 2 val = 1 )
         ( idx = 3 val = 1 )
         ( idx = 4 val = 1 )
         ( idx = 5 val = 1 ) )
-      act = f_cut->get_helper_values_by_index(  type = 'R' index = 7 ) ).
+      act = f_cut->get_helper_values_by_index(  type = zcl_abapnono=>helper_type_row index = 7 ) ).
   ENDMETHOD.
 
   METHOD helper_values_col_08.
     cl_abap_unit_assert=>assert_equals(
-      exp = VALUE zcl_abapnono=>_helper_values( ( type = 'R' cell = 8 idx = 1 val = 5 ) )
-      act = f_cut->get_helper_values_by_index(  type = 'R' index = 8 ) ).
+      exp = VALUE zcl_abapnono=>_helper_values( ( type = zcl_abapnono=>helper_type_row cell = 8 idx = 1 val = 5 ) )
+      act = f_cut->get_helper_values_by_index(  type = zcl_abapnono=>helper_type_row index = 8 ) ).
   ENDMETHOD.
 
   METHOD helper_values_col_09.
     cl_abap_unit_assert=>assert_equals(
-      exp = VALUE zcl_abapnono=>_helper_values( ( type = 'R' cell = 9 idx = 1 val = 1 ) )
-      act = f_cut->get_helper_values_by_index(  type = 'R' index = 9 ) ).
+      exp = VALUE zcl_abapnono=>_helper_values( ( type = zcl_abapnono=>helper_type_row cell = 9 idx = 1 val = 1 ) )
+      act = f_cut->get_helper_values_by_index(  type = zcl_abapnono=>helper_type_row index = 9 ) ).
   ENDMETHOD.
 
   METHOD helper_values_col_10.
     cl_abap_unit_assert=>assert_equals(
-      exp = VALUE zcl_abapnono=>_helper_values( ( type = 'R' cell = 10 idx = 1 val = 10 ) )
-      act = f_cut->get_helper_values_by_index(  type = 'R' index = 10 ) ).
+      exp = VALUE zcl_abapnono=>_helper_values( ( type = zcl_abapnono=>helper_type_row cell = 10 idx = 1 val = 10 ) )
+      act = f_cut->get_helper_values_by_index(  type = zcl_abapnono=>helper_type_row index = 10 ) ).
   ENDMETHOD.
 
 ENDCLASS.

@@ -30,7 +30,6 @@ CLASS zcl_abapnono DEFINITION
 
     "type for storing the board values
     TYPES: BEGIN OF _line,
-             idx TYPE i,
              c01 TYPE _option,
              c02 TYPE _option,
              c03 TYPE _option,
@@ -42,67 +41,37 @@ CLASS zcl_abapnono DEFINITION
              c09 TYPE _option,
              c10 TYPE _option,
            END OF _line,
-           _board TYPE SORTED TABLE OF _line WITH UNIQUE KEY idx.
+           _board TYPE STANDARD TABLE OF _line WITH EMPTY KEY.
     METHODS constructor.
-  PROTECTED SECTION.
-    DATA board TYPE _board.
-    DATA helper_values TYPE _helper_values.
-    METHODS init.
     METHODS set_data IMPORTING input_data TYPE _input_table.
-  PRIVATE SECTION.
-    METHODS transform_input
-      IMPORTING
-                input_data        TYPE _input_table
-      RETURNING VALUE(board_data) TYPE _board.
-    METHODS build_helping_numbers.
+    METHODS get_helper_numbers
+      RETURNING VALUE(r_result) TYPE _helper_values.
     METHODS get_helper_values_by_index
       IMPORTING
                 type          TYPE _helper_type
                 index         TYPE i
       RETURNING VALUE(values) TYPE _helper_values.
+  PROTECTED SECTION.
+    DATA board TYPE _board.
+    DATA helper_values TYPE _helper_values.
+    METHODS init.
+
+  PRIVATE SECTION.
+    METHODS transform_input
+      IMPORTING
+                input_data        TYPE _input_table
+      RETURNING VALUE(board_data) TYPE _board.
+    METHODS build_helper_numbers.
+
+
 ENDCLASS.
 
 
 
-CLASS zcl_abapnono IMPLEMENTATION.
-
-  METHOD init.
-    DO 10 TIMES.
-      INSERT VALUE #(  idx = sy-index ) INTO TABLE board.
-    ENDDO.
-  ENDMETHOD.
-
-  METHOD constructor.
-    init(  ).
-  ENDMETHOD.
-
-  METHOD set_data.
-
-    transform_input( input_data ).
-
-  ENDMETHOD.
+CLASS ZCL_ABAPNONO IMPLEMENTATION.
 
 
-  METHOD transform_input.
-
-    LOOP AT input_data INTO DATA(line).
-      ASSIGN board[ idx = sy-tabix ] TO FIELD-SYMBOL(<line>).
-      DATA(offset) = 0.
-      DATA(field_index) = 2.
-      DO strlen( line ) TIMES.
-        ASSIGN COMPONENT field_index OF STRUCTURE <line> TO FIELD-SYMBOL(<val>).
-        IF sy-subrc = 0.
-          <val> = SWITCH #( line+offset(1) WHEN '.' THEN option_clr ELSE option_set ).
-        ENDIF.
-        ADD 1 TO offset.
-        ADD 1 TO field_index.
-      ENDDO.
-
-    ENDLOOP.
-
-  ENDMETHOD.
-
-  METHOD build_helping_numbers.
+  METHOD build_helper_numbers.
     DATA switches  TYPE i.
     DATA last_option TYPE _option.
     DATA last_switch TYPE _option.
@@ -153,10 +122,51 @@ CLASS zcl_abapnono IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
+
+  METHOD constructor.
+    init(  ).
+  ENDMETHOD.
+
+
+  METHOD get_helper_numbers.
+  ENDMETHOD.
+
+
   METHOD get_helper_values_by_index.
 
     values = FILTER #( helper_values WHERE type = type AND cell = index ).
 
   ENDMETHOD.
 
+
+  METHOD init.
+    DO 10 TIMES.
+      INSERT VALUE #(  ) INTO TABLE board.
+    ENDDO.
+  ENDMETHOD.
+
+  METHOD set_data.
+    transform_input( input_data ).
+    build_helper_numbers( ).
+  ENDMETHOD.
+
+
+  METHOD transform_input.
+
+    LOOP AT input_data INTO DATA(line).
+      ASSIGN board[ sy-tabix ] TO FIELD-SYMBOL(<line>).
+      DATA(offset) = 0.
+      DATA(field_index) = 1.
+      DO strlen( line ) TIMES.
+        ASSIGN COMPONENT field_index OF STRUCTURE <line> TO FIELD-SYMBOL(<val>).
+        IF sy-subrc = 0.
+          <val> = SWITCH #( line+offset(1) WHEN '.' THEN option_clr ELSE option_set ).
+        ENDIF.
+        ADD 1 TO offset.
+        ADD 1 TO field_index.
+      ENDDO.
+
+    ENDLOOP.
+
+  ENDMETHOD.
 ENDCLASS.
