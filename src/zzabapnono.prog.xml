@@ -210,6 +210,18 @@
      <ENTRY>ABAPnono</ENTRY>
      <LENGTH>8</LENGTH>
     </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_DESCR</KEY>
+     <ENTRY>Description</ENTRY>
+     <LENGTH>19</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_LEVEL</KEY>
+     <ENTRY>Level-ID</ENTRY>
+     <LENGTH>16</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>

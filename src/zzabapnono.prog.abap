@@ -1,9 +1,14 @@
 REPORT zzabapnono.
 
 
+PARAMETERS p_level TYPE zcl_abapnono_levels=>_level_id DEFAULT 1.
+PARAMETERS p_descr TYPE string MODIF ID dsp.
+
 CLASS main DEFINITION.
   PUBLIC SECTION.
-    METHODS constructor.
+    METHODS constructor
+      IMPORTING
+        i_level TYPE zcl_abapnono_levels=>_level_id.
     METHODS init.
     METHODS show.
     METHODS pai IMPORTING i_ucomm TYPE clike.
@@ -16,12 +21,13 @@ CLASS main DEFINITION.
              i4 TYPE c LENGTH 2,
              i5 TYPE c LENGTH 2,
            END OF _row_counter.
-    TYPES: BEGIN OF _matrix_line,
-             row_counter TYPE _row_counter,
-             line        TYPE zcl_abapnono=>_line,
-             style       TYPE lvc_t_scol,
+    TYPES: BEGIN OF _matrix_line.
+             INCLUDE TYPE _row_counter.
+             INCLUDE TYPE zcl_abapnono=>_line.
+             TYPES: style TYPE lvc_t_scol,
            END OF _matrix_line.
     TYPES: _playing_matrix TYPE STANDARD TABLE OF _matrix_line WITH EMPTY KEY.
+    DATA level TYPE zcl_abapnono_levels=>_level_id.
     DATA playing_matrix TYPE _playing_matrix.
     DATA container TYPE REF TO cl_gui_custom_container.
     DATA nono TYPE REF TO zcl_abapnono.
@@ -34,6 +40,11 @@ ENDCLASS.
 CLASS main IMPLEMENTATION.
   METHOD constructor.
     nono = NEW #( ).
+    TRY.
+        nono->set_level( zcl_abapnono_levels=>get( i_level ) ).
+      CATCH zcx_abapnono.
+    ENDTRY.
+
   ENDMETHOD.
 
   METHOD init.
@@ -43,19 +54,6 @@ CLASS main IMPLEMENTATION.
 
   METHOD init_playing_matrix.
 
-    nono->set_data( VALUE #(
-     ( line = '....OO....' )
-     ( line = '...OOOO...' )
-     ( line = '..OO..OO..' )
-     ( line = '.OO....OO.' )
-     ( line = 'OOOOOOOOOO' )
-     ( line = 'OO.....OOO' )
-     ( line = 'OOO.....OO' )
-     ( line = 'OO.....OOO' )
-     ( line = 'OO..OO..OO' )
-     ( line = 'OOOOOOOOOO' )
-       ) ).
-
     DATA line_idx TYPE i.
     DATA col_idx TYPE i.
     DATA helper_idx TYPE i.
@@ -63,16 +61,16 @@ CLASS main IMPLEMENTATION.
     DO 5 TIMES.
       APPEND INITIAL LINE TO playing_matrix ASSIGNING FIELD-SYMBOL(<line>).
       <line>-style = VALUE #(
-       ( fname = 'LINE-C01' color = VALUE #( col = 5 ) )
-       ( fname = 'LINE-C02' color = VALUE #( col = 5 ) )
-       ( fname = 'LINE-C03' color = VALUE #( col = 5 ) )
-       ( fname = 'LINE-C04' color = VALUE #( col = 5 ) )
-       ( fname = 'LINE-C05' color = VALUE #( col = 5 ) )
-       ( fname = 'LINE-C06' color = VALUE #( col = 5 ) )
-       ( fname = 'LINE-C07' color = VALUE #( col = 5 ) )
-       ( fname = 'LINE-C08' color = VALUE #( col = 5 ) )
-       ( fname = 'LINE-C09' color = VALUE #( col = 5 ) )
-       ( fname = 'LINE-C10' color = VALUE #( col = 5 ) )
+       ( fname = 'C01' color = VALUE #( col = 5 ) )
+       ( fname = 'C02' color = VALUE #( col = 5 ) )
+       ( fname = 'C03' color = VALUE #( col = 5 ) )
+       ( fname = 'C04' color = VALUE #( col = 5 ) )
+       ( fname = 'C05' color = VALUE #( col = 5 ) )
+       ( fname = 'C06' color = VALUE #( col = 5 ) )
+       ( fname = 'C07' color = VALUE #( col = 5 ) )
+       ( fname = 'C08' color = VALUE #( col = 5 ) )
+       ( fname = 'C09' color = VALUE #( col = 5 ) )
+       ( fname = 'C10' color = VALUE #( col = 5 ) )
        ).
     ENDDO.
 
@@ -81,11 +79,11 @@ CLASS main IMPLEMENTATION.
       line_idx = sy-index.
       APPEND INITIAL LINE TO playing_matrix ASSIGNING <line>.
       <line>-style = VALUE #(
-       ( fname = 'ROW_COUNTER-I1' color = VALUE #( col = 5 ) )
-       ( fname = 'ROW_COUNTER-I2' color = VALUE #( col = 5 ) )
-       ( fname = 'ROW_COUNTER-I3' color = VALUE #( col = 5 ) )
-       ( fname = 'ROW_COUNTER-I4' color = VALUE #( col = 5 ) )
-       ( fname = 'ROW_COUNTER-I5' color = VALUE #( col = 5 ) )
+       ( fname = 'I1' color = VALUE #( col = 5 ) )
+       ( fname = 'I2' color = VALUE #( col = 5 ) )
+       ( fname = 'I3' color = VALUE #( col = 5 ) )
+       ( fname = 'I4' color = VALUE #( col = 5 ) )
+       ( fname = 'I5' color = VALUE #( col = 5 ) )
        ).
 
       DATA(row_helper_values) = nono->get_helper_values_by_index( type = zcl_abapnono=>helper_type_row index = line_idx ).
@@ -96,9 +94,11 @@ CLASS main IMPLEMENTATION.
 
         TRY.
             DATA(row_helper_value) = row_helper_values[ idx = helper_idx ] .
-            DATA(fieldname) = |ROW_COUNTER-I{ col_idx WIDTH = 1 ALIGN = RIGHT }|.
+            DATA(fieldname) = |I{ col_idx WIDTH = 1 ALIGN = RIGHT }|.
             ASSIGN COMPONENT fieldname OF STRUCTURE <line> TO FIELD-SYMBOL(<value>).
-            <value> = row_helper_value-val.
+            IF sy-subrc = 0.
+              <value> = row_helper_value-val.
+            ENDIF.
           CATCH cx_sy_itab_line_not_found.
         ENDTRY.
         col_idx = col_idx - 1.
@@ -127,9 +127,11 @@ CLASS main IMPLEMENTATION.
           o_columns->set_color_column( 'STYLE' ).
           DATA(columns) = o_columns->get( ).
           LOOP AT columns INTO DATA(column).
-            IF column-columnname(4) = 'LINE'.
+            IF column-columnname(1) = 'C'.
               column-r_column->set_output_length( 2 ).
               CAST cl_salv_column_table( column-r_column )->set_cell_type( if_salv_c_cell_type=>hotspot ).
+              CAST cl_salv_column_table( column-r_column )->set_icon( abap_true ).
+
             ENDIF.
             column-r_column->set_alignment( if_salv_c_alignment=>centered ).
           ENDLOOP.
@@ -146,8 +148,25 @@ CLASS main IMPLEMENTATION.
 
   METHOD on_hotspot.
 
+    FIELD-SYMBOLS <style> TYPE lvc_t_scol.
+
     DATA(selection) = salv_table->get_selections( ).
     selection->set_selected_cells( VALUE #( ) ).
+
+    DATA(new_row) = row - 5.
+
+    ASSIGN playing_matrix[ row ] TO FIELD-SYMBOL(<line>).
+    ASSIGN COMPONENT column OF STRUCTURE <line> TO FIELD-SYMBOL(<value>).
+
+    ASSIGN COMPONENT 'STYLE' OF STRUCTURE <line> TO <style>.
+    IF nono->is_set( i_row = new_row i_column = column ).
+      TRY.
+          <style>[ fname = column ]-color = VALUE #( col = 7 ).
+        CATCH cx_sy_itab_line_not_found.
+          INSERT VALUE #( fname = column color = VALUE #( col = 7 ) ) INTO TABLE <style>.
+      ENDTRY.
+    ENDIF.
+    salv_table->refresh( ).
 
   ENDMETHOD.
 
@@ -170,9 +189,24 @@ CLASS main IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
+AT SELECTION-SCREEN OUTPUT.
+  LOOP AT SCREEN.
+    IF screen-group1 = 'DSP'.
+      screen-input = '0'.
+      MODIFY SCREEN.
+    ENDIF.
+  ENDLOOP.
+
+AT SELECTION-SCREEN.
+  TRY.
+      DATA(level) = zcl_abapnono_levels=>get( p_level ).
+      p_descr = level->get_description( ).
+    CATCH zcx_abapnono.
+      MESSAGE 'Level does not exist' TYPE 'E'.
+  ENDTRY.
 
 START-OF-SELECTION.
-  DATA(app) = NEW main( ).
+  DATA(app) = NEW main( p_level ).
   app->init( ).
 
   CALL SCREEN 100 STARTING AT 30 1.

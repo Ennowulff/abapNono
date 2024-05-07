@@ -75,6 +75,10 @@ CLASS ltcl_test_helper_values DEFINITION FOR TESTING
     METHODS helper_values_col_08 FOR TESTING.
     METHODS helper_values_col_09 FOR TESTING.
     METHODS helper_values_col_10 FOR TESTING.
+    METHODS is_set_true FOR TESTING.
+    METHODS is_set_false FOR TESTING.
+    METHODS is_empty_true FOR TESTING.
+    METHODS is_empty_false FOR TESTING.
 
 ENDCLASS.
 
@@ -184,6 +188,33 @@ CLASS ltcl_test_helper_values IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
       exp = VALUE zcl_abapnono=>_helper_values( ( type = zcl_abapnono=>helper_type_row cell = 10 idx = 1 val = 10 ) )
       act = f_cut->get_helper_values_by_index(  type = zcl_abapnono=>helper_type_row index = 10 ) ).
+  ENDMETHOD.
+
+  METHOD is_empty_false.
+    cl_abap_unit_assert=>assert_equals(
+      exp = abap_false
+      act = f_cut->is_empty( i_row = 10 i_column = 'C01' ) ).
+  ENDMETHOD.
+
+  METHOD is_empty_true.
+    cl_abap_unit_assert=>assert_equals(
+      exp = abap_true
+      act = f_cut->is_empty( i_row = 1 i_column = 'C01' ) ).
+
+  ENDMETHOD.
+
+  METHOD is_set_false.
+    cl_abap_unit_assert=>assert_equals(
+      exp = abap_false
+      act = f_cut->is_set( i_row = 1 i_column = 'C01' ) ).
+
+  ENDMETHOD.
+
+  METHOD is_set_true.
+    cl_abap_unit_assert=>assert_equals(
+      exp = abap_true
+      act = f_cut->is_set( i_row = 10 i_column = 'C01' ) ).
+
   ENDMETHOD.
 
 ENDCLASS.
