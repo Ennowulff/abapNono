@@ -103,121 +103,40 @@ CLASS zcl_abapnono DEFINITION
                 i_column        TYPE clike
       RETURNING VALUE(r_result) TYPE _option.
 
+    METHODS build_helper_numbers_row.
+    METHODS build_helper_numbers_col.
+
 
 ENDCLASS.
 
 
-
 CLASS zcl_abapnono IMPLEMENTATION.
   METHOD build_helper_numbers.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA last_option  TYPE _option.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA last_switch  TYPE _option.
-    DATA helper_value TYPE _helper_value.
-
-    LOOP AT board ASSIGNING FIELD-SYMBOL(<line>).
-      DATA(line_index) = sy-tabix.
-      helper_value-type = helper_type_row.
-      helper_value-cell = line_index.
-      helper_value-idx  = 0.
-      last_option = space.
-
-      DO 10 TIMES.
-        DATA(field) = |C{ sy-index ALIGN = RIGHT WIDTH = 2 PAD = '0' }|.
-        ASSIGN COMPONENT field OF STRUCTURE <line> TO FIELD-SYMBOL(<opt>).
-        IF sy-subrc <> 0.
-          CONTINUE.
-        ENDIF.
-
-        IF <opt> = option_set.
-          helper_value-val = helper_value-val + 1.
-          last_switch = <opt>.
-          last_option = <opt>.
-          CONTINUE.
-        ENDIF.
-
-        IF <opt> = option_clr AND helper_value-val > 0.
-          helper_value-idx = helper_value-idx + 1.
-          INSERT helper_value INTO TABLE helper_values.
-          helper_value-val = 0.
-          last_switch = <opt>.
-          last_option = <opt>.
-          CONTINUE.
-        ENDIF.
-
-        last_option = <opt>.
-      ENDDO.
-
-      IF helper_value-val > 0.
-        helper_value-idx = helper_value-idx + 1.
-        INSERT helper_value INTO TABLE helper_values.
-        helper_value-val = 0.
-        last_switch = <opt>.
-        last_option = <opt>.
-        CONTINUE.
-      ENDIF.
-
-    ENDLOOP.
+    build_helper_numbers_row( ).
+    build_helper_numbers_col( ).
   ENDMETHOD.
-
 
   METHOD constructor.
-    init(  ).
+    init( ).
   ENDMETHOD.
-
 
   METHOD get_helper_numbers.
   ENDMETHOD.
 
-
   METHOD get_helper_values_by_index.
-
     values = FILTER #( helper_values WHERE type = type AND cell = index ).
-
-  ENDMETHOD.
-
-
-  METHOD init.
-    DO 10 TIMES.
-      INSERT VALUE #(  ) INTO TABLE board.
-    ENDDO.
-  ENDMETHOD.
-
-  METHOD set_data.
-    transform_input( input_data ).
-    build_helper_numbers( ).
-  ENDMETHOD.
-
-
-  METHOD transform_input.
-
-    LOOP AT input_data INTO DATA(line).
-      ASSIGN board[ sy-tabix ] TO FIELD-SYMBOL(<line>).
-      DATA(offset) = 0.
-      DATA(field_index) = 1.
-      DO strlen( line ) TIMES.
-        ASSIGN COMPONENT field_index OF STRUCTURE <line> TO FIELD-SYMBOL(<val>).
-        IF sy-subrc = 0.
-          <val> = SWITCH #( line+offset(1) WHEN '.' THEN option_clr ELSE option_set ).
-        ENDIF.
-        ADD 1 TO offset.
-        ADD 1 TO field_index.
-      ENDDO.
-
-    ENDLOOP.
-
-  ENDMETHOD.
-
-  METHOD set_level.
-    level = i_level.
-    set_data( level->get_board( ) ).
   ENDMETHOD.
 
   METHOD get_value.
     ASSIGN board[ i_row ] TO FIELD-SYMBOL(<line>).
     ASSIGN COMPONENT i_column OF STRUCTURE <line> TO FIELD-SYMBOL(<value>).
     r_result = <value>.
+  ENDMETHOD.
+
+  METHOD init.
+    DO 10 TIMES.
+      INSERT VALUE #( ) INTO TABLE board.
+    ENDDO.
   ENDMETHOD.
 
   METHOD is_empty.
@@ -234,7 +153,76 @@ CLASS zcl_abapnono IMPLEMENTATION.
     ELSE.
       r_result = abap_false.
     ENDIF.
-
   ENDMETHOD.
 
+  METHOD set_data.
+    transform_input( input_data ).
+    build_helper_numbers( ).
+  ENDMETHOD.
+
+  METHOD set_level.
+    level = i_level.
+    set_data( level->get_board( ) ).
+  ENDMETHOD.
+
+  METHOD transform_input.
+    LOOP AT input_data INTO DATA(line).
+      ASSIGN board[ sy-tabix ] TO FIELD-SYMBOL(<line>).
+      DATA(offset) = 0.
+      DATA(field_index) = 1.
+      DO strlen( line ) TIMES.
+        ASSIGN COMPONENT field_index OF STRUCTURE <line> TO FIELD-SYMBOL(<val>).
+        IF sy-subrc = 0.
+          <val> = SWITCH #( line+offset(1) WHEN '.' THEN option_clr ELSE option_set ).
+        ENDIF.
+        offset = offset + 1.
+        field_index = field_index + 1.
+      ENDDO.
+
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD build_helper_numbers_row.
+    DATA helper_value TYPE _helper_value.
+
+    LOOP AT board ASSIGNING FIELD-SYMBOL(<line>).
+      DATA(line_index) = sy-tabix.
+      helper_value-type = helper_type_row.
+      helper_value-cell = line_index.
+      helper_value-idx  = 0.
+
+      DO 10 TIMES.
+        DATA(field) = |C{ sy-index ALIGN = RIGHT WIDTH = 2 PAD = '0' }|.
+        ASSIGN COMPONENT field OF STRUCTURE <line> TO FIELD-SYMBOL(<opt>).
+        IF sy-subrc <> 0.
+          CONTINUE.
+        ENDIF.
+
+        IF <opt> = option_set.
+          helper_value-val = helper_value-val + 1.
+          CONTINUE.
+        ENDIF.
+
+        IF <opt> = option_clr AND helper_value-val > 0.
+          helper_value-idx = helper_value-idx + 1.
+          INSERT helper_value INTO TABLE helper_values.
+          helper_value-val = 0.
+          CONTINUE.
+        ENDIF.
+
+      ENDDO.
+
+      IF helper_value-val > 0.
+        helper_value-idx = helper_value-idx + 1.
+        INSERT helper_value INTO TABLE helper_values.
+        helper_value-val = 0.
+        CONTINUE.
+      ENDIF.
+
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD build_helper_numbers_col.
+    "todo
+  ENDMETHOD.
 ENDCLASS.
